@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="M·F·IDK">
+<meta name="theme-color" content="#0a0a0f">
+<title>M·F·IDK Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --m: #4fc3f7;
+    --f: #f48fb1;
+    --idk: #888899;
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e8f0;
+    --muted: #5a5a72;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: calc(var(--safe-top) + 10px);
+    padding-bottom: calc(var(--safe-bottom) + 10px);
+    padding-left: 18px;
+    padding-right: 18px;
+    gap: 0;
+    height: 100dvh;
+    justify-content: space-between;
+  }
+
+  /* HEADER */
+  header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .app-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, var(--m), var(--f));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:active { color: #ff6b6b; border-color: #ff6b6b; transform: scale(0.95); }
+
+  /* PIE CHART AREA */
+  .chart-wrapper {
+    position: relative;
+    width: min(230px, 52vw, 38vh);
+    height: min(230px, 52vw, 38vh);
+    flex-shrink: 0;
+  }
+
+  canvas#pie {
+    width: 100%;
+    height: 100%;
+  }
+
+  .chart-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .total-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(38px, 12vw, 56px);
+    line-height: 1;
+    color: var(--text);
+    transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
+  }
+  .total-number.bump { transform: scale(1.18); }
+
+  .total-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .legend-pct {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* CONTROLS */
+  .controls {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .category-row {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 8px 12px;
+    gap: 10px;
+    transition: border-color 0.2s;
+  }
+  .category-row.m-row { --accent: var(--m); }
+  .category-row.f-row { --accent: var(--f); }
+  .category-row.idk-row { --accent: var(--idk); }
+
+  .cat-indicator {
+    width: 3px;
+    height: 30px;
+    border-radius: 2px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .cat-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    width: 38px;
+    flex-shrink: 0;
+  }
+
+  .cat-count {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+    flex: 1;
+    text-align: center;
+    transition: transform 0.12s cubic-bezier(.34,1.56,.64,1);
+    min-width: 0;
+  }
+  .cat-count.bump { transform: scale(1.3); }
+
+  .btn-group {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .counter-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 20px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+    -webkit-touch-callout: none;
+    flex-shrink: 0;
+  }
+
+  .counter-btn.plus {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+  }
+
+  .counter-btn.minus {
+    color: var(--muted);
+  }
+
+  .counter-btn:active {
+    transform: scale(0.88);
+    filter: brightness(1.3);
+  }
+
+  .counter-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  /* EMPTY STATE inside chart */
+  .empty-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* Ripple */
+  @keyframes ripple {
+    0% { transform: scale(0); opacity: 0.4; }
+    100% { transform: scale(3); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="app-title">TRACKER</div>
+  <button class="reset-btn" onclick="resetAll()">RESET</button>
+</header>
+
+<div class="chart-wrapper">
+  <canvas id="pie"></canvas>
+  <div class="chart-center">
+    <div class="total-number" id="totalNum">0</div>
+    <div class="total-label">TOTALE</div>
+  </div>
+  <div class="empty-msg" id="emptyMsg">nessun dato</div>
+</div>
+
+<div class="legend" id="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--m)"></div>
+    <span>M <span class="legend-pct" id="pct-m">–</span></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--f)"></div>
+    <span>F <span class="legend-pct" id="pct-f">–</span></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#888899"></div>
+    <span>IDK <span class="legend-pct" id="pct-idk">–</span></span>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="category-row m-row">
+    <div class="cat-indicator"></div>
+    <div class="cat-label">M</div>
+    <div class="cat-count" id="count-m">0</div>
+    <div class="btn-group">
+      <button class="counter-btn minus" id="minus-m" onclick="change('m',-1)" disabled>−</button>
+      <button class="counter-btn plus" onclick="change('m',1)">+</button>
+    </div>
+  </div>
+
+  <div class="category-row f-row">
+    <div class="cat-indicator"></div>
+    <div class="cat-label">F</div>
+    <div class="cat-count" id="count-f">0</div>
+    <div class="btn-group">
+      <button class="counter-btn minus" id="minus-f" onclick="change('f',-1)" disabled>−</button>
+      <button class="counter-btn plus" onclick="change('f',1)">+</button>
+    </div>
+  </div>
+
+  <div class="category-row idk-row">
+    <div class="cat-indicator"></div>
+    <div class="cat-label">IDK</div>
+    <div class="cat-count" id="count-idk">0</div>
+    <div class="btn-group">
+      <button class="counter-btn minus" id="minus-idk" onclick="change('idk',-1)" disabled>−</button>
+      <button class="counter-btn plus" onclick="change('idk',1)">+</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'mfidk_data_v1';
+const COLORS = { m: '#4fc3f7', f: '#f48fb1', idk: '#888899' };
+
+let counts = { m: 0, f: 0, idk: 0 };
+
+function load() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) counts = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(counts));
+}
+
+// ── Logic ──────────────────────────────────────────────────────────────────
+function change(cat, delta) {
+  if (delta < 0 && counts[cat] <= 0) return;
+  counts[cat] = Math.max(0, counts[cat] + delta);
+  save();
+  render();
+  animateBump(cat);
+}
+
+function resetAll() {
+  if (!confirm('Resettare tutto?')) return;
+  counts = { m: 0, f: 0, idk: 0 };
+  save();
+  render();
+}
+
+function animateBump(cat) {
+  const el = document.getElementById('count-' + cat);
+  const total = document.getElementById('totalNum');
+  el.classList.remove('bump');
+  total.classList.remove('bump');
+  requestAnimationFrame(() => {
+    el.classList.add('bump');
+    total.classList.add('bump');
+    setTimeout(() => { el.classList.remove('bump'); total.classList.remove('bump'); }, 200);
+  });
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const total = counts.m + counts.f + counts.idk;
+
+  // counts
+  ['m','f','idk'].forEach(k => {
+    document.getElementById('count-' + k).textContent = counts[k];
+    document.getElementById('minus-' + k).disabled = counts[k] <= 0;
+  });
+
+  // total
+  document.getElementById('totalNum').textContent = total;
+
+  // percentages legend
+  ['m','f','idk'].forEach(k => {
+    const pct = total > 0 ? Math.round(counts[k] / total * 100) : 0;
+    document.getElementById('pct-' + k).textContent = total > 0 ? pct + '%' : '–';
+  });
+
+  // empty msg
+  document.getElementById('emptyMsg').style.display = total === 0 ? 'flex' : 'none';
+
+  drawPie(total);
+}
+
+// ── Pie Chart ──────────────────────────────────────────────────────────────
+let animReq = null;
+let animStart = null;
+let fromSlices = [0, 0, 0];
+let toSlices = [0, 0, 0];
+const ANIM_DUR = 420;
+
+function drawPie(total) {
+  const cats = ['m','f','idk'];
+  const vals = cats.map(k => counts[k]);
+  toSlices = total > 0 ? vals.map(v => v / total) : [0,0,0];
+
+  if (animReq) cancelAnimationFrame(animReq);
+  animStart = null;
+  const startFrom = [...fromSlices];
+
+  function frame(ts) {
+    if (!animStart) animStart = ts;
+    const t = Math.min((ts - animStart) / ANIM_DUR, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const cur = startFrom.map((s, i) => s + (toSlices[i] - s) * ease);
+    paintPie(cur, total);
+    if (t < 1) animReq = requestAnimationFrame(frame);
+    else { fromSlices = [...toSlices]; animReq = null; }
+  }
+  animReq = requestAnimationFrame(frame);
+}
+
+function paintPie(slices, total) {
+  const canvas = document.getElementById('pie');
+  const dpr = window.devicePixelRatio || 1;
+  const size = canvas.getBoundingClientRect().width;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2, cy = size / 2;
+  const outerR = size / 2 - 6;
+  const innerR = outerR * 0.62;
+  const gap = 0.025; // gap between slices in radians
+
+  ctx.clearRect(0, 0, size, size);
+
+  if (total === 0) {
+    // draw empty ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+    ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+    ctx.fillStyle = 'rgba(255,255,255,0.04)';
+    ctx.fill();
+    return;
+  }
+
+  const cats = ['m','f','idk'];
+  let startAngle = -Math.PI / 2;
+
+  slices.forEach((pct, i) => {
+    if (pct <= 0) return;
+    const sweep = pct * Math.PI * 2;
+    const endAngle = startAngle + sweep;
+    const midAngle = startAngle + sweep / 2;
+
+    // glow
+    const grd = ctx.createRadialGradient(
+      cx + Math.cos(midAngle) * (innerR + outerR) / 2 * 0.5,
+      cy + Math.sin(midAngle) * (innerR + outerR) / 2 * 0.5,
+      0, cx, cy, outerR
+    );
+    grd.addColorStop(0, COLORS[cats[i]] + 'cc');
+    grd.addColorStop(1, COLORS[cats[i]] + '55');
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, startAngle + gap/2, endAngle - gap/2);
+    ctx.arc(cx, cy, innerR, endAngle - gap/2, startAngle + gap/2, true);
+    ctx.closePath();
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // percentage label on slice
+    if (pct > 0.07) {
+      const labelR = (innerR + outerR) / 2;
+      const lx = cx + Math.cos(midAngle) * labelR;
+      const ly = cy + Math.sin(midAngle) * labelR;
+      ctx.fillStyle = '#fff';
+      ctx.font = `500 ${Math.max(10, size * 0.055)}px DM Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = Math.min(1, pct * 8);
+      ctx.fillText(Math.round(pct * 100) + '%', lx, ly);
+      ctx.globalAlpha = 1;
+    }
+
+    startAngle = endAngle;
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+load();
+render();
+
+window.addEventListener('resize', () => render());
+</script>
+</body>
+</html>
