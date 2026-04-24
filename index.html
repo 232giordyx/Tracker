@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="M·F·IDK">
+<meta name="apple-mobile-web-app-title" content="Nyx Tracker">
 <meta name="theme-color" content="#0a0a0f">
-<title>M·F·IDK Counter</title>
+<title>Nyx Gender Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root {
     --m: #4fc3f7;
     --f: #f48fb1;
+    --nb: #f9c74f;
     --idk: #888899;
     --bg: #0a0a0f;
     --surface: #13131a;
@@ -60,8 +61,8 @@
 
   .app-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 30px;
-    letter-spacing: 6px;
+    font-size: 22px;
+    letter-spacing: 3px;
     background: linear-gradient(135deg, var(--m), var(--f));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -169,6 +170,7 @@
   }
   .category-row.m-row { --accent: var(--m); }
   .category-row.f-row { --accent: var(--f); }
+  .category-row.nb-row { --accent: var(--nb); }
   .category-row.idk-row { --accent: var(--idk); }
 
   .cat-indicator {
@@ -266,7 +268,7 @@
 <body>
 
 <header>
-  <div class="app-title">TRACKER</div>
+  <div class="app-title">NYX GENDER TRACKER</div>
   <button class="reset-btn" onclick="resetAll()">RESET</button>
 </header>
 
@@ -287,6 +289,10 @@
   <div class="legend-item">
     <div class="legend-dot" style="background:var(--f)"></div>
     <span>F <span class="legend-pct" id="pct-f">–</span></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--nb)"></div>
+    <span>NB <span class="legend-pct" id="pct-nb">–</span></span>
   </div>
   <div class="legend-item">
     <div class="legend-dot" style="background:#888899"></div>
@@ -315,6 +321,16 @@
     </div>
   </div>
 
+  <div class="category-row nb-row">
+    <div class="cat-indicator"></div>
+    <div class="cat-label">NB</div>
+    <div class="cat-count" id="count-nb">0</div>
+    <div class="btn-group">
+      <button class="counter-btn minus" id="minus-nb" onclick="change('nb',-1)" disabled>−</button>
+      <button class="counter-btn plus" onclick="change('nb',1)">+</button>
+    </div>
+  </div>
+
   <div class="category-row idk-row">
     <div class="cat-indicator"></div>
     <div class="cat-label">IDK</div>
@@ -328,10 +344,11 @@
 
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'mfidk_data_v1';
-const COLORS = { m: '#4fc3f7', f: '#f48fb1', idk: '#888899' };
+const STORAGE_KEY = 'nyx_data_v1';
+const CATS = ['m','f','nb','idk'];
+const COLORS = { m: '#4fc3f7', f: '#f48fb1', nb: '#f9c74f', idk: '#888899' };
 
-let counts = { m: 0, f: 0, idk: 0 };
+let counts = { m: 0, f: 0, nb: 0, idk: 0 };
 
 function load() {
   try {
@@ -355,7 +372,7 @@ function change(cat, delta) {
 
 function resetAll() {
   if (!confirm('Resettare tutto?')) return;
-  counts = { m: 0, f: 0, idk: 0 };
+  counts = { m: 0, f: 0, nb: 0, idk: 0 };
   save();
   render();
 }
@@ -372,42 +389,48 @@ function animateBump(cat) {
   });
 }
 
+// ── Largest remainder method for percentages (no 101% bug) ────────────────
+function calcPercentages(vals, total) {
+  if (total === 0) return vals.map(() => 0);
+  const exact = vals.map(v => v / total * 100);
+  const floored = exact.map(Math.floor);
+  const remainders = exact.map((e, i) => ({ i, r: e - floored[i] }));
+  let remaining = 100 - floored.reduce((a, b) => a + b, 0);
+  remainders.sort((a, b) => b.r - a.r);
+  for (let j = 0; j < remaining; j++) floored[remainders[j].i]++;
+  return floored;
+}
+
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
-  const total = counts.m + counts.f + counts.idk;
+  const total = CATS.reduce((s, k) => s + counts[k], 0);
 
-  // counts
-  ['m','f','idk'].forEach(k => {
+  CATS.forEach(k => {
     document.getElementById('count-' + k).textContent = counts[k];
     document.getElementById('minus-' + k).disabled = counts[k] <= 0;
   });
 
-  // total
   document.getElementById('totalNum').textContent = total;
 
-  // percentages legend
-  ['m','f','idk'].forEach(k => {
-    const pct = total > 0 ? Math.round(counts[k] / total * 100) : 0;
-    document.getElementById('pct-' + k).textContent = total > 0 ? pct + '%' : '–';
+  const pcts = calcPercentages(CATS.map(k => counts[k]), total);
+  CATS.forEach((k, i) => {
+    document.getElementById('pct-' + k).textContent = total > 0 ? pcts[i] + '%' : '–';
   });
 
-  // empty msg
   document.getElementById('emptyMsg').style.display = total === 0 ? 'flex' : 'none';
-
   drawPie(total);
 }
 
 // ── Pie Chart ──────────────────────────────────────────────────────────────
 let animReq = null;
 let animStart = null;
-let fromSlices = [0, 0, 0];
-let toSlices = [0, 0, 0];
+let fromSlices = [0, 0, 0, 0];
+let toSlices = [0, 0, 0, 0];
 const ANIM_DUR = 420;
 
 function drawPie(total) {
-  const cats = ['m','f','idk'];
-  const vals = cats.map(k => counts[k]);
-  toSlices = total > 0 ? vals.map(v => v / total) : [0,0,0];
+  const vals = CATS.map(k => counts[k]);
+  toSlices = total > 0 ? vals.map(v => v / total) : [0,0,0,0];
 
   if (animReq) cancelAnimationFrame(animReq);
   animStart = null;
@@ -437,12 +460,11 @@ function paintPie(slices, total) {
   const cx = size / 2, cy = size / 2;
   const outerR = size / 2 - 6;
   const innerR = outerR * 0.62;
-  const gap = 0.025; // gap between slices in radians
+  const gap = 0.025;
 
   ctx.clearRect(0, 0, size, size);
 
   if (total === 0) {
-    // draw empty ring
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
     ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
@@ -451,7 +473,6 @@ function paintPie(slices, total) {
     return;
   }
 
-  const cats = ['m','f','idk'];
   let startAngle = -Math.PI / 2;
 
   slices.forEach((pct, i) => {
@@ -460,14 +481,13 @@ function paintPie(slices, total) {
     const endAngle = startAngle + sweep;
     const midAngle = startAngle + sweep / 2;
 
-    // glow
     const grd = ctx.createRadialGradient(
       cx + Math.cos(midAngle) * (innerR + outerR) / 2 * 0.5,
       cy + Math.sin(midAngle) * (innerR + outerR) / 2 * 0.5,
       0, cx, cy, outerR
     );
-    grd.addColorStop(0, COLORS[cats[i]] + 'cc');
-    grd.addColorStop(1, COLORS[cats[i]] + '55');
+    grd.addColorStop(0, COLORS[CATS[i]] + 'cc');
+    grd.addColorStop(1, COLORS[CATS[i]] + '55');
 
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, startAngle + gap/2, endAngle - gap/2);
@@ -476,17 +496,18 @@ function paintPie(slices, total) {
     ctx.fillStyle = grd;
     ctx.fill();
 
-    // percentage label on slice
-    if (pct > 0.07) {
+    if (pct > 0.06) {
       const labelR = (innerR + outerR) / 2;
       const lx = cx + Math.cos(midAngle) * labelR;
       const ly = cy + Math.sin(midAngle) * labelR;
       ctx.fillStyle = '#fff';
-      ctx.font = `500 ${Math.max(10, size * 0.055)}px DM Mono, monospace`;
+      ctx.font = `500 ${Math.max(10, size * 0.052)}px DM Mono, monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.globalAlpha = Math.min(1, pct * 8);
-      ctx.fillText(Math.round(pct * 100) + '%', lx, ly);
+      // Use largest remainder pct for label too
+      const labelPct = Math.round(pct * 100);
+      ctx.fillText(labelPct + '%', lx, ly);
       ctx.globalAlpha = 1;
     }
 
@@ -497,7 +518,6 @@ function paintPie(slices, total) {
 // ── Init ───────────────────────────────────────────────────────────────────
 load();
 render();
-
 window.addEventListener('resize', () => render());
 </script>
 </body>
