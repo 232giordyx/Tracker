@@ -11,90 +11,66 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --m: #4fc3f7;
-    --f: #f48fb1;
-    --nb: #f9c74f;
-    --idk: #888899;
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --border: rgba(255,255,255,0.07);
-    --text: #e8e8f0;
-    --muted: #5a5a72;
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
+ 
   html, body {
     height: 100%;
-    background: var(--bg);
-    color: var(--text);
+    background: #0a0a0f;
+    color: #e8e8f0;
     font-family: 'DM Mono', monospace;
     overflow: hidden;
     user-select: none;
   }
-
+ 
   body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: calc(var(--safe-top) + 10px);
-    padding-bottom: calc(var(--safe-bottom) + 10px);
-    padding-left: 18px;
-    padding-right: 18px;
-    gap: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) 18px calc(env(safe-area-inset-bottom, 0px) + 10px);
     height: 100dvh;
-    justify-content: space-between;
+    gap: 8px;
   }
-
-  /* HEADER */
+ 
   header {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0;
     flex-shrink: 0;
   }
-
+ 
   .app-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: 3px;
-    background: linear-gradient(135deg, var(--m), var(--f));
+    background: linear-gradient(135deg, #4fc3f7, #f48fb1, #f9c74f);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-
+ 
   .reset-btn {
     background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: #5a5a72;
     font-family: 'DM Mono', monospace;
     font-size: 10px;
     letter-spacing: 1px;
-    padding: 6px 12px;
+    padding: 5px 11px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s;
   }
   .reset-btn:active { color: #ff6b6b; border-color: #ff6b6b; transform: scale(0.95); }
-
-  /* PIE CHART AREA */
+ 
   .chart-wrapper {
     position: relative;
-    width: min(230px, 52vw, 38vh);
-    height: min(230px, 52vw, 38vh);
+    width: min(200px, 48vw, 32vh);
+    height: min(200px, 48vw, 32vh);
     flex-shrink: 0;
   }
-
-  canvas#pie {
-    width: 100%;
-    height: 100%;
-  }
-
+ 
+  canvas#pie { width: 100%; height: 100%; }
+ 
   .chart-center {
     position: absolute;
     inset: 0;
@@ -104,117 +80,140 @@
     justify-content: center;
     pointer-events: none;
   }
-
+ 
   .total-number {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(38px, 12vw, 56px);
+    font-size: clamp(32px, 10vw, 48px);
     line-height: 1;
-    color: var(--text);
+    color: #e8e8f0;
     transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
   }
   .total-number.bump { transform: scale(1.18); }
-
+ 
   .total-label {
-    font-size: 9px;
+    font-size: 8px;
     letter-spacing: 2px;
-    color: var(--muted);
+    color: #5a5a72;
     margin-top: 2px;
   }
-
-  /* LEGEND */
+ 
+  .empty-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: #5a5a72;
+    pointer-events: none;
+  }
+ 
   .legend {
     display: flex;
-    gap: 16px;
-    margin-bottom: 0;
+    gap: 10px;
     flex-shrink: 0;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
   }
-
+  .legend::-webkit-scrollbar { display: none; }
+ 
   .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--muted);
+    gap: 5px;
+    font-size: 10px;
+    color: #5a5a72;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-
+ 
   .legend-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     flex-shrink: 0;
   }
-
-  .legend-pct {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  /* CONTROLS */
+ 
+  .legend-pct { color: #e8e8f0; font-weight: 500; }
+ 
   .controls {
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    flex-shrink: 0;
+    gap: 7px;
+    min-height: 0;
   }
-
+  .controls::-webkit-scrollbar { display: none; }
+ 
   .category-row {
     display: flex;
     align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 8px 12px;
-    gap: 10px;
-    transition: border-color 0.2s;
+    background: #13131a;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 13px;
+    padding: 7px 11px;
+    gap: 9px;
+    flex-shrink: 0;
   }
-  .category-row.m-row { --accent: var(--m); }
-  .category-row.f-row { --accent: var(--f); }
-  .category-row.nb-row { --accent: var(--nb); }
-  .category-row.idk-row { --accent: var(--idk); }
-
+ 
   .cat-indicator {
     width: 3px;
-    height: 30px;
+    height: 26px;
     border-radius: 2px;
     background: var(--accent);
     flex-shrink: 0;
   }
-
+ 
   .cat-label {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 2px;
+    font-size: 17px;
+    letter-spacing: 1px;
     color: var(--accent);
-    width: 38px;
+    width: 42px;
     flex-shrink: 0;
   }
-
-  .cat-count {
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--text);
+ 
+  .cat-fullname {
+    font-size: 9px;
+    color: #5a5a72;
     flex: 1;
+    min-width: 0;
+    letter-spacing: 0.5px;
+  }
+ 
+  .cat-count {
+    font-size: 18px;
+    font-weight: 400;
+    color: #e8e8f0;
+    width: 32px;
     text-align: center;
     transition: transform 0.12s cubic-bezier(.34,1.56,.64,1);
-    min-width: 0;
-  }
-  .cat-count.bump { transform: scale(1.3); }
-
-  .btn-group {
-    display: flex;
-    gap: 6px;
     flex-shrink: 0;
   }
-
+  .cat-count.bump { transform: scale(1.35); }
+ 
+  .btn-group {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+ 
   .counter-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 11px;
-    border: 1px solid var(--border);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.07);
     background: rgba(255,255,255,0.04);
-    color: var(--text);
-    font-size: 20px;
+    color: #e8e8f0;
+    font-size: 18px;
     font-family: 'DM Mono', monospace;
     cursor: pointer;
     display: flex;
@@ -224,54 +223,25 @@
     -webkit-touch-callout: none;
     flex-shrink: 0;
   }
-
+ 
   .counter-btn.plus {
     background: color-mix(in srgb, var(--accent) 15%, transparent);
-    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
     color: var(--accent);
   }
-
-  .counter-btn.minus {
-    color: var(--muted);
-  }
-
-  .counter-btn:active {
-    transform: scale(0.88);
-    filter: brightness(1.3);
-  }
-
-  .counter-btn:disabled {
-    opacity: 0.25;
-    cursor: default;
-  }
-
-  /* EMPTY STATE inside chart */
-  .empty-msg {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    letter-spacing: 1px;
-    color: var(--muted);
-    pointer-events: none;
-  }
-
-  /* Ripple */
-  @keyframes ripple {
-    0% { transform: scale(0); opacity: 0.4; }
-    100% { transform: scale(3); opacity: 0; }
-  }
+ 
+  .counter-btn.minus { color: #5a5a72; }
+  .counter-btn:active { transform: scale(0.86); filter: brightness(1.3); }
+  .counter-btn:disabled { opacity: 0.2; cursor: default; }
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div class="app-title">NYX GENDER TRACKER</div>
   <button class="reset-btn" onclick="resetAll()">RESET</button>
 </header>
-
+ 
 <div class="chart-wrapper">
   <canvas id="pie"></canvas>
   <div class="chart-center">
@@ -280,175 +250,135 @@
   </div>
   <div class="empty-msg" id="emptyMsg">nessun dato</div>
 </div>
-
-<div class="legend" id="legend">
-  <div class="legend-item">
-    <div class="legend-dot" style="background:var(--m)"></div>
-    <span>M <span class="legend-pct" id="pct-m">–</span></span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:var(--f)"></div>
-    <span>F <span class="legend-pct" id="pct-f">–</span></span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:var(--nb)"></div>
-    <span>NB <span class="legend-pct" id="pct-nb">–</span></span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:#888899"></div>
-    <span>IDK <span class="legend-pct" id="pct-idk">–</span></span>
-  </div>
-</div>
-
-<div class="controls">
-  <div class="category-row m-row">
-    <div class="cat-indicator"></div>
-    <div class="cat-label">M</div>
-    <div class="cat-count" id="count-m">0</div>
-    <div class="btn-group">
-      <button class="counter-btn minus" id="minus-m" onclick="change('m',-1)" disabled>−</button>
-      <button class="counter-btn plus" onclick="change('m',1)">+</button>
-    </div>
-  </div>
-
-  <div class="category-row f-row">
-    <div class="cat-indicator"></div>
-    <div class="cat-label">F</div>
-    <div class="cat-count" id="count-f">0</div>
-    <div class="btn-group">
-      <button class="counter-btn minus" id="minus-f" onclick="change('f',-1)" disabled>−</button>
-      <button class="counter-btn plus" onclick="change('f',1)">+</button>
-    </div>
-  </div>
-
-  <div class="category-row nb-row">
-    <div class="cat-indicator"></div>
-    <div class="cat-label">NB</div>
-    <div class="cat-count" id="count-nb">0</div>
-    <div class="btn-group">
-      <button class="counter-btn minus" id="minus-nb" onclick="change('nb',-1)" disabled>−</button>
-      <button class="counter-btn plus" onclick="change('nb',1)">+</button>
-    </div>
-  </div>
-
-  <div class="category-row idk-row">
-    <div class="cat-indicator"></div>
-    <div class="cat-label">IDK</div>
-    <div class="cat-count" id="count-idk">0</div>
-    <div class="btn-group">
-      <button class="counter-btn minus" id="minus-idk" onclick="change('idk',-1)" disabled>−</button>
-      <button class="counter-btn plus" onclick="change('idk',1)">+</button>
-    </div>
-  </div>
-</div>
-
+ 
+<div class="legend" id="legend"></div>
+<div class="controls" id="controls"></div>
+ 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'nyx_data_v1';
-const CATS = ['m','f','nb','idk'];
-const COLORS = { m: '#4fc3f7', f: '#f48fb1', nb: '#f9c74f', idk: '#888899' };
-
-let counts = { m: 0, f: 0, nb: 0, idk: 0 };
-
+const CATS = [
+  { id: 'm',   label: 'M',   full: 'Maschio',     color: '#4fc3f7' },
+  { id: 'f',   label: 'F',   full: 'Femmina',     color: '#f48fb1' },
+  { id: 'nb',  label: 'NB',  full: 'Non Binary',  color: '#f9c74f' },
+  { id: 'ag',  label: 'AG',  full: 'Agender',     color: '#a8dadc' },
+  { id: 'dg',  label: 'DG',  full: 'Demigirl',    color: '#ffb3c6' },
+  { id: 'db',  label: 'DB',  full: 'Demiboy',     color: '#90e0ef' },
+  { id: 'bg',  label: 'BG',  full: 'Bigender',    color: '#c77dff' },
+  { id: 'dfx', label: 'DFX', full: 'Demiflux',    color: '#ff9f1c' },
+  { id: 'dgn', label: 'DGN', full: 'Demigender',  color: '#b7e4c7' },
+  { id: 'pan', label: 'PAN', full: 'Pangender',   color: '#ff6b9d' },
+  { id: 'omn', label: 'OMN', full: 'Omnigender',  color: '#e040fb' },
+  { id: 'idk', label: 'IDK', full: 'Non so',      color: '#888899' },
+];
+ 
+const STORAGE_KEY = 'nyx_data_v2';
+let counts = {};
+CATS.forEach(c => counts[c.id] = 0);
+ 
 function load() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) counts = JSON.parse(saved);
+    if (saved) {
+      const p = JSON.parse(saved);
+      CATS.forEach(c => { if (p[c.id] !== undefined) counts[c.id] = p[c.id]; });
+    }
   } catch(e) {}
 }
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(counts));
-}
-
-// ── Logic ──────────────────────────────────────────────────────────────────
-function change(cat, delta) {
-  if (delta < 0 && counts[cat] <= 0) return;
-  counts[cat] = Math.max(0, counts[cat] + delta);
-  save();
-  render();
-  animateBump(cat);
-}
-
-function resetAll() {
-  if (!confirm('Resettare tutto?')) return;
-  counts = { m: 0, f: 0, nb: 0, idk: 0 };
-  save();
-  render();
-}
-
-function animateBump(cat) {
-  const el = document.getElementById('count-' + cat);
-  const total = document.getElementById('totalNum');
-  el.classList.remove('bump');
-  total.classList.remove('bump');
-  requestAnimationFrame(() => {
-    el.classList.add('bump');
-    total.classList.add('bump');
-    setTimeout(() => { el.classList.remove('bump'); total.classList.remove('bump'); }, 200);
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); }
+ 
+function buildUI() {
+  const legend = document.getElementById('legend');
+  const controls = document.getElementById('controls');
+  CATS.forEach(cat => {
+    const li = document.createElement('div');
+    li.className = 'legend-item';
+    li.innerHTML = `<div class="legend-dot" style="background:${cat.color}"></div><span>${cat.label} <span class="legend-pct" id="pct-${cat.id}">–</span></span>`;
+    legend.appendChild(li);
+ 
+    const row = document.createElement('div');
+    row.className = 'category-row';
+    row.style.setProperty('--accent', cat.color);
+    row.innerHTML = `
+      <div class="cat-indicator"></div>
+      <div class="cat-label">${cat.label}</div>
+      <div class="cat-fullname">${cat.full}</div>
+      <div class="cat-count" id="count-${cat.id}">0</div>
+      <div class="btn-group">
+        <button class="counter-btn minus" id="minus-${cat.id}" onclick="change('${cat.id}',-1)" disabled>−</button>
+        <button class="counter-btn plus" onclick="change('${cat.id}',1)">+</button>
+      </div>`;
+    controls.appendChild(row);
   });
 }
-
-// ── Largest remainder method for percentages (no 101% bug) ────────────────
+ 
+function change(id, delta) {
+  if (delta < 0 && counts[id] <= 0) return;
+  counts[id] = Math.max(0, counts[id] + delta);
+  save(); render(); animateBump(id);
+}
+ 
+function resetAll() {
+  if (!confirm('Resettare tutto?')) return;
+  CATS.forEach(c => counts[c.id] = 0);
+  save(); render();
+}
+ 
+function animateBump(id) {
+  const el = document.getElementById('count-' + id);
+  const tot = document.getElementById('totalNum');
+  [el, tot].forEach(e => e.classList.remove('bump'));
+  requestAnimationFrame(() => {
+    [el, tot].forEach(e => e.classList.add('bump'));
+    setTimeout(() => [el, tot].forEach(e => e.classList.remove('bump')), 200);
+  });
+}
+ 
 function calcPercentages(vals, total) {
   if (total === 0) return vals.map(() => 0);
   const exact = vals.map(v => v / total * 100);
   const floored = exact.map(Math.floor);
-  const remainders = exact.map((e, i) => ({ i, r: e - floored[i] }));
-  let remaining = 100 - floored.reduce((a, b) => a + b, 0);
-  remainders.sort((a, b) => b.r - a.r);
-  for (let j = 0; j < remaining; j++) floored[remainders[j].i]++;
+  const rems = exact.map((e, i) => ({ i, r: e - floored[i] })).sort((a, b) => b.r - a.r);
+  let left = 100 - floored.reduce((a, b) => a + b, 0);
+  for (let j = 0; j < left; j++) floored[rems[j].i]++;
   return floored;
 }
-
-// ── Render ─────────────────────────────────────────────────────────────────
+ 
 function render() {
-  const total = CATS.reduce((s, k) => s + counts[k], 0);
-
-  CATS.forEach(k => {
-    document.getElementById('count-' + k).textContent = counts[k];
-    document.getElementById('minus-' + k).disabled = counts[k] <= 0;
+  const total = CATS.reduce((s, c) => s + counts[c.id], 0);
+  const vals = CATS.map(c => counts[c.id]);
+  const pcts = calcPercentages(vals, total);
+  CATS.forEach((cat, i) => {
+    document.getElementById('count-' + cat.id).textContent = counts[cat.id];
+    document.getElementById('minus-' + cat.id).disabled = counts[cat.id] <= 0;
+    document.getElementById('pct-' + cat.id).textContent = total > 0 ? pcts[i] + '%' : '–';
   });
-
   document.getElementById('totalNum').textContent = total;
-
-  const pcts = calcPercentages(CATS.map(k => counts[k]), total);
-  CATS.forEach((k, i) => {
-    document.getElementById('pct-' + k).textContent = total > 0 ? pcts[i] + '%' : '–';
-  });
-
   document.getElementById('emptyMsg').style.display = total === 0 ? 'flex' : 'none';
-  drawPie(total);
+  drawPie(total, vals, pcts);
 }
-
-// ── Pie Chart ──────────────────────────────────────────────────────────────
-let animReq = null;
-let animStart = null;
-let fromSlices = [0, 0, 0, 0];
-let toSlices = [0, 0, 0, 0];
+ 
+let animReq = null, animStart = null;
+let fromSlices = CATS.map(() => 0);
+let toSlices   = CATS.map(() => 0);
 const ANIM_DUR = 420;
-
-function drawPie(total) {
-  const vals = CATS.map(k => counts[k]);
-  toSlices = total > 0 ? vals.map(v => v / total) : [0,0,0,0];
-
+ 
+function drawPie(total, vals, pcts) {
+  toSlices = total > 0 ? vals.map(v => v / total) : CATS.map(() => 0);
   if (animReq) cancelAnimationFrame(animReq);
   animStart = null;
   const startFrom = [...fromSlices];
-
   function frame(ts) {
     if (!animStart) animStart = ts;
     const t = Math.min((ts - animStart) / ANIM_DUR, 1);
     const ease = 1 - Math.pow(1 - t, 3);
     const cur = startFrom.map((s, i) => s + (toSlices[i] - s) * ease);
-    paintPie(cur, total);
+    paintPie(cur, total, pcts);
     if (t < 1) animReq = requestAnimationFrame(frame);
     else { fromSlices = [...toSlices]; animReq = null; }
   }
   animReq = requestAnimationFrame(frame);
 }
-
-function paintPie(slices, total) {
+ 
+function paintPie(slices, total, pcts) {
   const canvas = document.getElementById('pie');
   const dpr = window.devicePixelRatio || 1;
   const size = canvas.getBoundingClientRect().width;
@@ -456,68 +386,55 @@ function paintPie(slices, total) {
   canvas.height = size * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-
-  const cx = size / 2, cy = size / 2;
-  const outerR = size / 2 - 6;
-  const innerR = outerR * 0.62;
-  const gap = 0.025;
-
+  const cx = size/2, cy = size/2;
+  const outerR = size/2 - 5;
+  const innerR = outerR * 0.60;
+  const gap = 0.022;
   ctx.clearRect(0, 0, size, size);
-
   if (total === 0) {
     ctx.beginPath();
-    ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-    ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
+    ctx.arc(cx, cy, outerR, 0, Math.PI*2);
+    ctx.arc(cx, cy, innerR, 0, Math.PI*2, true);
     ctx.fillStyle = 'rgba(255,255,255,0.04)';
     ctx.fill();
     return;
   }
-
   let startAngle = -Math.PI / 2;
-
   slices.forEach((pct, i) => {
     if (pct <= 0) return;
     const sweep = pct * Math.PI * 2;
     const endAngle = startAngle + sweep;
     const midAngle = startAngle + sweep / 2;
-
+    const col = CATS[i].color;
     const grd = ctx.createRadialGradient(
-      cx + Math.cos(midAngle) * (innerR + outerR) / 2 * 0.5,
-      cy + Math.sin(midAngle) * (innerR + outerR) / 2 * 0.5,
+      cx + Math.cos(midAngle)*(innerR+outerR)/2*0.5,
+      cy + Math.sin(midAngle)*(innerR+outerR)/2*0.5,
       0, cx, cy, outerR
     );
-    grd.addColorStop(0, COLORS[CATS[i]] + 'cc');
-    grd.addColorStop(1, COLORS[CATS[i]] + '55');
-
+    grd.addColorStop(0, col + 'dd');
+    grd.addColorStop(1, col + '44');
     ctx.beginPath();
-    ctx.arc(cx, cy, outerR, startAngle + gap/2, endAngle - gap/2);
-    ctx.arc(cx, cy, innerR, endAngle - gap/2, startAngle + gap/2, true);
+    ctx.arc(cx, cy, outerR, startAngle+gap/2, endAngle-gap/2);
+    ctx.arc(cx, cy, innerR, endAngle-gap/2, startAngle+gap/2, true);
     ctx.closePath();
     ctx.fillStyle = grd;
     ctx.fill();
-
     if (pct > 0.06) {
-      const labelR = (innerR + outerR) / 2;
-      const lx = cx + Math.cos(midAngle) * labelR;
-      const ly = cy + Math.sin(midAngle) * labelR;
+      const labelR = (innerR+outerR)/2;
+      ctx.save();
       ctx.fillStyle = '#fff';
-      ctx.font = `500 ${Math.max(10, size * 0.052)}px DM Mono, monospace`;
+      ctx.font = `500 ${Math.max(9, size*0.048)}px DM Mono, monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.globalAlpha = Math.min(1, pct * 8);
-      // Use largest remainder pct for label too
-      const labelPct = Math.round(pct * 100);
-      ctx.fillText(labelPct + '%', lx, ly);
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = Math.min(1, pct*10);
+      ctx.fillText(pcts[i]+'%', cx+Math.cos(midAngle)*labelR, cy+Math.sin(midAngle)*labelR);
+      ctx.restore();
     }
-
     startAngle = endAngle;
   });
 }
-
-// ── Init ───────────────────────────────────────────────────────────────────
-load();
-render();
+ 
+load(); buildUI(); render();
 window.addEventListener('resize', () => render());
 </script>
 </body>
